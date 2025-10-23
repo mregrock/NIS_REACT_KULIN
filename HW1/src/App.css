@@ -1,0 +1,37 @@
+.movie-card {
+  border: 1px solid #ccc;
+  padding: 16px;
+  margin: 16px;
+  border-radius: 8px;
+  width: 250px;
+  display: inline-block;
+  vertical-align: top;
+}
+
+.movie-list.grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.movie-list.list .movie-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin: 8px 0;
+}
+
+.movie-list.list .movie-card-info {
+  display: flex;
+  align-items: center;
+}
+
+.movie-list.list .movie-card-info h2,
+.movie-list.list .movie-card-info p {
+  margin: 0 16px 0 0;
+}
+
+.movie-list.list .movie-card img {
+ display: none;
+}
