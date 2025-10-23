@@ -31,21 +31,25 @@ function App() {
     });
 
   return (
-    <>
+    <div className="app-container">
       <h1>Каталог фильмов</h1>
-      <div>
-        <input type="text" ref={searchRef} onChange={handleSearch} placeholder="Поиск по названию..." />
-      </div>
-      <div>
-        <button onClick={() => setFilter('all')}>Все</button>
-        <button onClick={() => setFilter('favorites')}>Избранные</button>
-      </div>
-      <div>
-        <button onClick={() => setViewMode('grid')}>Плитка</button>
-        <button onClick={() => setViewMode('list')}>Список</button>
-      </div>
+      
+      <header className="controls-header">
+        <div className="search-bar">
+          <input type="text" ref={searchRef} onChange={handleSearch} placeholder="Поиск по названию..." />
+        </div>
+        <div className="filter-buttons">
+          <button onClick={() => setFilter('all')} className={filter === 'all' ? 'active' : ''}>Все</button>
+          <button onClick={() => setFilter('favorites')} className={filter === 'favorites' ? 'active' : ''}>Только избранные</button>
+        </div>
+        <div className="view-mode-buttons">
+          <button onClick={() => setViewMode('grid')} className={viewMode === 'grid' ? 'active' : ''}>Плитка</button>
+          <button onClick={() => setViewMode('list')} className={viewMode === 'list' ? 'active' : ''}>Список</button>
+        </div>
+      </header>
+
       <MovieList movies={filteredMovies} toggleFavorite={toggleFavorite} viewMode={viewMode} />
-    </>
+    </div>
   )
 }
 

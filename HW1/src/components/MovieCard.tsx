@@ -15,8 +15,11 @@ export function MovieCard({ movie, toggleFavorite, viewMode }: Props) {
       <div className="movie-card-info">
         <h2>{movie.title}</h2>
         <p>{movie.year}</p>
-        <button onClick={() => toggleFavorite(movie.id)}>
-          {movie.isFavorite ? '★' : '☆'}
+        <button 
+          onClick={() => toggleFavorite(movie.id)}
+          className={`favorite-btn ${movie.isFavorite ? 'favorited' : ''}`}
+        >
+          ★
         </button>
       </div>
     </div>
