@@ -1,0 +1,47 @@
+[
+  {
+    "id": "1",
+    "name": "CyberCat",
+    "species": "Cat",
+    "mood": "happy",
+    "energy": 100,
+    "level": 1,
+    "avatar": "https://masterpiecer-images.s3.yandex.net/254cb5df6df211ee968b6a0259d7362a:upscaled"
+  },
+  {
+    "id": "2",
+    "name": "RoboDog",
+    "species": "Dog",
+    "mood": "neutral",
+    "energy": 80,
+    "level": 2,
+    "avatar": "https://masterpiecer-images.s3.yandex.net/69f9bd41a8b911ee9f6d761639a32c7e:upscaled"
+  },
+  {
+    "id": "3",
+    "name": "MechaBird",
+    "species": "Bird",
+    "mood": "happy",
+    "energy": 90,
+    "level": 1,
+    "avatar": "https://avatars.mds.yandex.net/get-shedevrum/15229196/img_ecf58428d42711ef94cf8698c72f17c9/orig"
+  },
+  {
+    "id": "4",
+    "name": "IronFox",
+    "species": "Fox",
+    "mood": "sad",
+    "energy": 40,
+    "level": 3,
+    "avatar": "https://masterpiecer-images.s3.yandex.net/d3ad948b2c3d11eebd93665ed5a7b875:upscaled"
+  },
+  {
+    "id": "5",
+    "name": "SteelBear",
+    "species": "Bear",
+    "mood": "neutral",
+    "energy": 60,
+    "level": 2,
+    "avatar": "https://masterpiecer-images.s3.yandex.net/7bd4dfed630211eea9cf7a2f0d1382ba:upscaled"
+  }
+]
