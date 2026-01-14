@@ -1,0 +1,12 @@
+:root {
+  font-family: Arial, sans-serif;
+  background-color: #f0f2f5;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
