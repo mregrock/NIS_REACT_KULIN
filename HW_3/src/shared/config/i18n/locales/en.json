@@ -1,0 +1,44 @@
+{
+  "login": {
+    "title": "Login",
+    "username": "Username",
+    "password": "Password",
+    "submit": "Sign In",
+    "error": "Invalid credentials"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "products": "Products",
+    "profile": "Profile",
+    "settings": "Settings",
+    "logout": "Logout"
+  },
+  "products": {
+    "title": "Products",
+    "search": "Search products...",
+    "price": "Price",
+    "rating": "Rating",
+    "category": "Category",
+    "loading": "Loading...",
+    "error": "Error loading products",
+    "empty": "No products found"
+  },
+  "profile": {
+    "title": "Profile",
+    "name": "Name",
+    "email": "Email"
+  },
+  "settings": {
+    "title": "Settings",
+    "theme": "Theme",
+    "language": "Language",
+    "pageSize": "Products per page",
+    "light": "Light",
+    "dark": "Dark",
+    "ru": "Russian",
+    "en": "English"
+  },
+  "common": {
+    "back": "Back"
+  }
+}
