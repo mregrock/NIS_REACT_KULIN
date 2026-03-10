@@ -8,7 +8,7 @@ import MovieDetailSheet from './MovieDetailSheet'
 const VISIBLE_CARDS = 3
 
 export default function CardStack() {
-  const { queue, swipeLeft, swipeRight, loading } = useMovieStore()
+  const { queue, swipeLeft, swipeRight, loading, undoCount } = useMovieStore()
   const [detailMovie, setDetailMovie] = useState<KpMovie | null>(null)
 
   const visible = queue.slice(0, VISIBLE_CARDS)
@@ -43,7 +43,7 @@ export default function CardStack() {
 
             return (
               <MovieCard
-                key={movie.id}
+                key={`${movie.id}-${idx === 0 ? undoCount : 0}`}
                 movie={movie}
                 onSwipeLeft={swipeLeft}
                 onSwipeRight={swipeRight}

@@ -12,21 +12,39 @@ const topGenres = (weights: Record<string, number>, n = 2): string[] =>
     .slice(0, n)
     .map(([name]) => name)
 
+interface LastSwipe {
+  movie: KpMovie
+  direction: 'left' | 'right'
+  prevWeights: Record<string, number>
+  prevSeenIds: number[]
+  prevSwipeCount: number
+  prevLikeCount: number
+}
+
 interface MovieStore {
   queue: KpMovie[]
   liked: KpMovie[]
   seenIds: number[]
   selectedGenre: string | null
+  minRating: number | null
+  decade: { label: string; from: number; to: number } | null
   page: number
   loading: boolean
   error: string | null
   genreWeights: Record<string, number>
+  lastSwipe: LastSwipe | null
+  undoCount: number
+  swipeCount: number
+  likeCount: number
 
-  loadMovies: (reset?: boolean) => Promise<void>
+  loadMovies: (reset?: boolean, _attempt?: number) => Promise<void>
   swipeRight: (movie: KpMovie) => void
   swipeLeft: (movie: KpMovie) => void
+  undo: () => void
   removeLiked: (id: number) => void
   setGenre: (genre: string | null) => void
+  setMinRating: (rating: number | null) => void
+  setDecade: (decade: { label: string; from: number; to: number } | null) => void
   resetAll: () => void
 }
 
@@ -61,54 +79,105 @@ export const useMovieStore = create<MovieStore>()(
       liked: [],
       seenIds: [],
       selectedGenre: null,
+      minRating: null,
+      decade: null,
       page: 1,
       loading: false,
       error: null,
       genreWeights: {},
+      lastSwipe: null,
+      undoCount: 0,
+      swipeCount: 0,
+      likeCount: 0,
 
-      loadMovies: async (reset = false) => {
-        const { page, selectedGenre, seenIds, genreWeights } = get()
-        const nextPage = reset ? 1 : page
+      loadMovies: async (reset = false, _attempt = 0) => {
+        if (_attempt > 5) {
+          set({ loading: false })
+          return
+        }
+        const { page, selectedGenre, seenIds, genreWeights, minRating, decade } = get()
+        const nextPage = reset && _attempt === 0 ? 1 : page
 
         set({ loading: true, error: null })
         try {
           const preferred = selectedGenre ? [] : topGenres(genreWeights)
-          const data = await fetchMovies(nextPage, selectedGenre ?? undefined, preferred)
+          const data = await fetchMovies({
+            page: nextPage,
+            genre: selectedGenre ?? undefined,
+            preferredGenres: preferred,
+            minRating: minRating ?? undefined,
+            decade,
+          })
           const seenSet = new Set(seenIds)
           const fresh = data.docs.filter((m) => !seenSet.has(m.id))
 
           set((s) => {
-            const combined = reset ? fresh : [...s.queue, ...fresh]
+            const combined = reset && _attempt === 0 ? fresh : [...s.queue, ...fresh]
             return {
-              queue: sortByRelevance(combined, genreWeights),
+              queue: sortByRelevance(combined, s.genreWeights),
               page: nextPage + 1,
               loading: false,
             }
           })
+
+          if (fresh.length === 0 && data.docs.length > 0) {
+            get().loadMovies(false, _attempt + 1)
+          }
         } catch {
           set({ loading: false, error: 'Не удалось загрузить фильмы' })
         }
       },
 
       swipeRight: (movie) => {
-        const newWeights = updateWeights(get().genreWeights, movie.genres, 2)
+        const { genreWeights, seenIds, swipeCount, likeCount } = get()
+        const newWeights = updateWeights(genreWeights, movie.genres, 2)
         set((s) => ({
           queue: sortByRelevance(s.queue.filter((m) => m.id !== movie.id), newWeights),
           liked: s.liked.some((m) => m.id === movie.id) ? s.liked : [movie, ...s.liked],
           seenIds: addSeen(s.seenIds, movie.id),
           genreWeights: newWeights,
+          swipeCount: swipeCount + 1,
+          likeCount: likeCount + 1,
+          lastSwipe: {
+            movie, direction: 'right',
+            prevWeights: genreWeights, prevSeenIds: seenIds,
+            prevSwipeCount: swipeCount, prevLikeCount: likeCount,
+          },
         }))
         if (get().queue.length < 3) get().loadMovies()
       },
 
       swipeLeft: (movie) => {
-        const newWeights = updateWeights(get().genreWeights, movie.genres, -1)
+        const { genreWeights, seenIds, swipeCount, likeCount } = get()
+        const newWeights = updateWeights(genreWeights, movie.genres, -1)
         set((s) => ({
           queue: sortByRelevance(s.queue.filter((m) => m.id !== movie.id), newWeights),
           seenIds: addSeen(s.seenIds, movie.id),
           genreWeights: newWeights,
+          swipeCount: swipeCount + 1,
+          lastSwipe: {
+            movie, direction: 'left',
+            prevWeights: genreWeights, prevSeenIds: seenIds,
+            prevSwipeCount: swipeCount, prevLikeCount: likeCount,
+          },
         }))
         if (get().queue.length < 3) get().loadMovies()
+      },
+
+      undo: () => {
+        const { lastSwipe } = get()
+        if (!lastSwipe) return
+        const { movie, direction, prevWeights, prevSeenIds, prevSwipeCount, prevLikeCount } = lastSwipe
+        set((s) => ({
+          queue: [movie, ...s.queue],
+          liked: direction === 'right' ? s.liked.filter((m) => m.id !== movie.id) : s.liked,
+          seenIds: prevSeenIds,
+          genreWeights: prevWeights,
+          swipeCount: prevSwipeCount,
+          likeCount: prevLikeCount,
+          lastSwipe: null,
+          undoCount: s.undoCount + 1,
+        }))
       },
 
       removeLiked: (id) => {
@@ -120,17 +189,34 @@ export const useMovieStore = create<MovieStore>()(
         get().loadMovies(true)
       },
 
+      setMinRating: (rating) => {
+        set({ minRating: rating, queue: [], page: 1 })
+        get().loadMovies(true)
+      },
+
+      setDecade: (decade) => {
+        set({ decade, queue: [], page: 1 })
+        get().loadMovies(true)
+      },
+
       resetAll: () => {
         set({
           queue: [], liked: [], seenIds: [],
-          genreWeights: {}, selectedGenre: null, page: 1,
+          genreWeights: {}, selectedGenre: null, minRating: null, decade: null,
+          page: 1, lastSwipe: null, undoCount: 0, swipeCount: 0, likeCount: 0,
         })
         get().loadMovies(true)
       },
     }),
     {
       name: 'movie-tinder',
-      partialize: (s) => ({ liked: s.liked, genreWeights: s.genreWeights, seenIds: s.seenIds }),
+      partialize: (s) => ({
+        liked: s.liked,
+        genreWeights: s.genreWeights,
+        seenIds: s.seenIds,
+        swipeCount: s.swipeCount,
+        likeCount: s.likeCount,
+      }),
     }
   )
 )

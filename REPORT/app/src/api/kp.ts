@@ -18,11 +18,29 @@ export const GENRE_LIST = [
   'история', 'биография', 'детектив', 'фэнтези', 'документальный',
 ]
 
-export const fetchMovies = async (
+export const DECADE_LIST = [
+  { label: '80-е', from: 1980, to: 1989 },
+  { label: '90-е', from: 1990, to: 1999 },
+  { label: '2000-е', from: 2000, to: 2009 },
+  { label: '2010-е', from: 2010, to: 2019 },
+  { label: '2020-е', from: 2020, to: 2029 },
+]
+
+export interface FetchMoviesOptions {
+  page?: number
+  genre?: string
+  preferredGenres?: string[]
+  minRating?: number
+  decade?: { from: number; to: number } | null
+}
+
+export const fetchMovies = async ({
   page = 1,
-  genre?: string,
-  preferredGenres: string[] = []
-): Promise<KpResponse> => {
+  genre,
+  preferredGenres = [],
+  minRating,
+  decade,
+}: FetchMoviesOptions = {}): Promise<KpResponse> => {
   try {
     const params: Record<string, string | number> = {
       limit: 10,
@@ -30,7 +48,7 @@ export const fetchMovies = async (
       notNullFields: 'poster.url',
       type: 'movie',
       'votes.imdb': '10000-99999999',
-      'movieLength': '60-300',
+      movieLength: '60-300',
       sortField: 'votes.imdb',
       sortType: -1,
     }
@@ -41,12 +59,26 @@ export const fetchMovies = async (
       params['genres.name'] = preferredGenres[0]
     }
 
+    if (minRating) {
+      params['rating.imdb'] = `${minRating}-10`
+    }
+
+    if (decade) {
+      params['year'] = `${decade.from}-${decade.to}`
+    }
+
     const response = await api.get<KpResponse>('/v1.4/movie', { params })
     return response.data
   } catch {
-    const filtered = genre
+    let filtered = genre
       ? MOCK_MOVIES.filter((m) => m.genres.some((g) => g.name === genre))
       : MOCK_MOVIES
+    if (minRating) {
+      filtered = filtered.filter((m) => (m.rating.imdb || m.rating.kp) >= minRating)
+    }
+    if (decade) {
+      filtered = filtered.filter((m) => m.year && m.year >= decade.from && m.year <= decade.to)
+    }
     const pageSize = 10
     const start = (page - 1) * pageSize
     return {

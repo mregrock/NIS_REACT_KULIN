@@ -126,21 +126,31 @@ export default function MovieDetailSheet({ movie, onClose }: Props) {
               </div>
             </div>
 
-            <div className="flex gap-4 px-5 py-4 border-t border-zinc-800 shrink-0 bg-zinc-900">
-              <motion.button
-                onClick={handleDislike}
-                whileTap={{ scale: 0.95 }}
-                className="flex-1 h-12 rounded-2xl bg-zinc-800 border border-red-500/40 text-red-400 font-semibold text-sm hover:bg-red-500/10 transition-colors"
+            <div className="flex flex-col gap-3 px-5 py-4 border-t border-zinc-800 shrink-0 bg-zinc-900">
+              <a
+                href={`https://www.kinopoisk.ru/film/${movie.id}/`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center justify-center gap-2 h-10 rounded-2xl bg-orange-500/10 border border-orange-500/30 text-orange-400 text-sm font-medium hover:bg-orange-500/20 transition-colors"
               >
-                ✕ Не интересно
-              </motion.button>
-              <motion.button
-                onClick={handleLike}
-                whileTap={{ scale: 0.95 }}
-                className="flex-1 h-12 rounded-2xl bg-green-500/10 border border-green-500/40 text-green-400 font-semibold text-sm hover:bg-green-500/20 transition-colors"
-              >
-                ♥ Нравится
-              </motion.button>
+                🎬 Открыть на Кинопоиске
+              </a>
+              <div className="flex gap-4">
+                <motion.button
+                  onClick={handleDislike}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex-1 h-12 rounded-2xl bg-zinc-800 border border-red-500/40 text-red-400 font-semibold text-sm hover:bg-red-500/10 transition-colors"
+                >
+                  ✕ Не интересно
+                </motion.button>
+                <motion.button
+                  onClick={handleLike}
+                  whileTap={{ scale: 0.95 }}
+                  className="flex-1 h-12 rounded-2xl bg-green-500/10 border border-green-500/40 text-green-400 font-semibold text-sm hover:bg-green-500/20 transition-colors"
+                >
+                  ♥ Нравится
+                </motion.button>
+              </div>
             </div>
           </motion.div>
         </>
