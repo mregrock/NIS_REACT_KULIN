@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useMovieStore } from '../store/useMovieStore'
-import { getPosterUrl } from '../api/tmdb'
+import type { KpMovie } from '../types/movie'
+import MovieDetailSheet from './MovieDetailSheet'
 
 interface Props {
   open: boolean
@@ -8,7 +10,8 @@ interface Props {
 }
 
 export default function LikedMovies({ open, onClose }: Props) {
-  const { liked, removeLiked } = useMovieStore()
+  const { liked, removeLiked, resetAll } = useMovieStore()
+  const [detailMovie, setDetailMovie] = useState<KpMovie | null>(null)
 
   return (
     <AnimatePresence>
@@ -33,12 +36,26 @@ export default function LikedMovies({ open, onClose }: Props) {
                 Понравилось{' '}
                 <span className="text-green-400 ml-1">{liked.length}</span>
               </h2>
-              <button
-                onClick={onClose}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors"
-              >
-                ✕
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    if (confirm('Сбросить всё? Лайки и предпочтения будут удалены.')) {
+                      resetAll()
+                      onClose()
+                    }
+                  }}
+                  className="text-xs text-zinc-500 hover:text-red-400 px-2 py-1 rounded-lg hover:bg-zinc-800 transition-colors"
+                  title="Сбросить всё и начать заново"
+                >
+                  Сбросить всё
+                </button>
+                <button
+                  onClick={onClose}
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
 
             <div className="flex-1 overflow-y-auto py-3 px-3 space-y-2">
@@ -49,8 +66,7 @@ export default function LikedMovies({ open, onClose }: Props) {
               )}
               <AnimatePresence>
                 {liked.map((movie) => {
-                  const poster = getPosterUrl(movie.poster_path, 'w185')
-                  const year = movie.release_date?.slice(0, 4) ?? ''
+                  const poster = movie.poster?.previewUrl ?? null
                   return (
                     <motion.div
                       key={movie.id}
@@ -58,12 +74,13 @@ export default function LikedMovies({ open, onClose }: Props) {
                       initial={{ opacity: 0, x: 30 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: 30 }}
-                      className="flex items-center gap-3 bg-zinc-800 rounded-2xl p-2 group"
+                      onClick={() => setDetailMovie(movie)}
+                      className="flex items-center gap-3 bg-zinc-800 rounded-2xl p-2 group cursor-pointer hover:bg-zinc-700 transition-colors"
                     >
                       {poster ? (
                         <img
                           src={poster}
-                          alt={movie.title}
+                          alt={movie.name ?? movie.alternativeName ?? ''}
                           className="w-12 h-16 object-cover rounded-xl shrink-0"
                         />
                       ) : (
@@ -71,11 +88,14 @@ export default function LikedMovies({ open, onClose }: Props) {
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-white truncate">
-                          {movie.title}
+                          {movie.name || movie.alternativeName}
                         </p>
                         <p className="text-xs text-zinc-400">
-                          {year} · ★ {movie.vote_average.toFixed(1)}
+                          {movie.year} · ★ {(movie.rating.imdb || movie.rating.kp).toFixed(1)}
                         </p>
+                        {movie.alternativeName && (
+                          <p className="text-xs text-zinc-600 truncate">{movie.alternativeName}</p>
+                        )}
                       </div>
                       <button
                         onClick={() => removeLiked(movie.id)}
@@ -91,6 +111,11 @@ export default function LikedMovies({ open, onClose }: Props) {
           </motion.aside>
         </>
       )}
+
+      <MovieDetailSheet
+        movie={detailMovie}
+        onClose={() => setDetailMovie(null)}
+      />
     </AnimatePresence>
   )
 }

@@ -6,14 +6,13 @@ import {
   useAnimation,
   type PanInfo,
 } from 'framer-motion'
-import type { Movie, Genre } from '../types/movie'
-import { getPosterUrl } from '../api/tmdb'
+import type { KpMovie } from '../types/movie'
 
 interface Props {
-  movie: Movie
-  genres: Genre[]
-  onSwipeLeft: (movie: Movie) => void
-  onSwipeRight: (movie: Movie) => void
+  movie: KpMovie
+  onSwipeLeft: (movie: KpMovie) => void
+  onSwipeRight: (movie: KpMovie) => void
+  onDetails: (movie: KpMovie) => void
   isTop: boolean
   zIndex: number
   scale: number
@@ -24,9 +23,9 @@ const SWIPE_THRESHOLD = 100
 
 export default function MovieCard({
   movie,
-  genres,
   onSwipeLeft,
   onSwipeRight,
+  onDetails,
   isTop,
   zIndex,
   scale,
@@ -35,17 +34,17 @@ export default function MovieCard({
   const x = useMotionValue(0)
   const controls = useAnimation()
   const constraintsRef = useRef(null)
+  const didDrag = useRef(false)
 
   const rotate = useTransform(x, [-300, 0, 300], [-20, 0, 20])
   const likeOpacity = useTransform(x, [20, 120], [0, 1])
   const nopeOpacity = useTransform(x, [-120, -20], [1, 0])
 
-  const movieGenres = genres
-    .filter((g) => movie.genre_ids.includes(g.id))
-    .slice(0, 3)
+  const genres = movie.genres.slice(0, 3)
+  const poster = movie.poster?.url ?? null
+  const rating = movie.rating.imdb || movie.rating.kp
 
-  const year = movie.release_date?.slice(0, 4) ?? ''
-  const poster = getPosterUrl(movie.poster_path)
+  const handleDragStart = () => { didDrag.current = true }
 
   const handleDragEnd = async (_: unknown, info: PanInfo) => {
     if (info.offset.x > SWIPE_THRESHOLD) {
@@ -57,6 +56,11 @@ export default function MovieCard({
     } else {
       controls.start({ x: 0, rotate: 0, transition: { type: 'spring', stiffness: 300, damping: 20 } })
     }
+    setTimeout(() => { didDrag.current = false }, 100)
+  }
+
+  const handleClick = () => {
+    if (!didDrag.current) onDetails(movie)
   }
 
   return (
@@ -71,7 +75,9 @@ export default function MovieCard({
         drag={isTop ? 'x' : false}
         dragConstraints={{ left: 0, right: 0 }}
         dragElastic={0.7}
+        onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
+        onClick={handleClick}
         animate={controls}
         style={{ x, rotate }}
         className="relative w-full max-w-sm cursor-grab active:cursor-grabbing select-none"
@@ -81,7 +87,7 @@ export default function MovieCard({
           {poster ? (
             <img
               src={poster}
-              alt={movie.title}
+              alt={movie.name ?? movie.alternativeName ?? ''}
               className="w-full h-full object-cover"
               draggable={false}
             />
@@ -111,23 +117,32 @@ export default function MovieCard({
 
           <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-5 pt-16">
             <h2 className="text-white font-bold text-xl leading-tight">
-              {movie.title}
-              {year && <span className="font-normal text-zinc-400 ml-2 text-base">{year}</span>}
+              {movie.name || movie.alternativeName}
+              {movie.year && (
+                <span className="font-normal text-zinc-400 ml-2 text-base">{movie.year}</span>
+              )}
             </h2>
 
             <div className="flex items-center gap-2 mt-1 mb-2">
               <span className="text-yellow-400 text-sm font-semibold">
-                ★ {movie.vote_average.toFixed(1)}
+                ★ {rating.toFixed(1)}
               </span>
-              <span className="text-zinc-500 text-xs">({movie.vote_count.toLocaleString()})</span>
+              {movie.top250 && (
+                <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded-full">
+                  Топ 250 #{movie.top250}
+                </span>
+              )}
+              {movie.ageRating && (
+                <span className="text-xs text-zinc-500">{movie.ageRating}+</span>
+              )}
             </div>
 
-            {movieGenres.length > 0 && (
+            {genres.length > 0 && (
               <div className="flex flex-wrap gap-1 mb-3">
-                {movieGenres.map((g) => (
+                {genres.map((g) => (
                   <span
-                    key={g.id}
-                    className="text-xs bg-white/20 text-white px-2 py-0.5 rounded-full"
+                    key={g.name}
+                    className="text-xs bg-white/20 text-white px-2 py-0.5 rounded-full capitalize"
                   >
                     {g.name}
                   </span>
@@ -135,10 +150,14 @@ export default function MovieCard({
               </div>
             )}
 
-            {movie.overview && (
+            {movie.shortDescription && (
               <p className="text-zinc-300 text-sm line-clamp-2 leading-snug">
-                {movie.overview}
+                {movie.shortDescription}
               </p>
+            )}
+
+            {isTop && (
+              <p className="text-zinc-500 text-xs mt-2">Tap для подробностей</p>
             )}
           </div>
         </div>

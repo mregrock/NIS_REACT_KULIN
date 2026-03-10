@@ -1,11 +1,15 @@
+import { useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import { useMovieStore } from '../store/useMovieStore'
+import type { KpMovie } from '../types/movie'
 import MovieCard from './MovieCard'
+import MovieDetailSheet from './MovieDetailSheet'
 
 const VISIBLE_CARDS = 3
 
 export default function CardStack() {
-  const { queue, genres, swipeLeft, swipeRight, loading } = useMovieStore()
+  const { queue, swipeLeft, swipeRight, loading } = useMovieStore()
+  const [detailMovie, setDetailMovie] = useState<KpMovie | null>(null)
 
   const visible = queue.slice(0, VISIBLE_CARDS)
 
@@ -28,29 +32,36 @@ export default function CardStack() {
   }
 
   return (
-    <div className="relative w-full max-w-sm mx-auto" style={{ height: '480px' }}>
-      <AnimatePresence>
-        {[...visible].reverse().map((movie, reversedIdx) => {
-          const idx = visible.length - 1 - reversedIdx
-          const isTop = idx === 0
-          const scale = 1 - idx * 0.04
-          const yOffset = idx * 12
+    <>
+      <div className="relative w-full max-w-sm mx-auto" style={{ height: '480px' }}>
+        <AnimatePresence>
+          {[...visible].reverse().map((movie, reversedIdx) => {
+            const idx = visible.length - 1 - reversedIdx
+            const isTop = idx === 0
+            const scale = 1 - idx * 0.04
+            const yOffset = idx * 12
 
-          return (
-            <MovieCard
-              key={movie.id}
-              movie={movie}
-              genres={genres}
-              onSwipeLeft={swipeLeft}
-              onSwipeRight={swipeRight}
-              isTop={isTop}
-              zIndex={visible.length - idx}
-              scale={scale}
-              yOffset={yOffset}
-            />
-          )
-        })}
-      </AnimatePresence>
-    </div>
+            return (
+              <MovieCard
+                key={movie.id}
+                movie={movie}
+                onSwipeLeft={swipeLeft}
+                onSwipeRight={swipeRight}
+                onDetails={setDetailMovie}
+                isTop={isTop}
+                zIndex={visible.length - idx}
+                scale={scale}
+                yOffset={yOffset}
+              />
+            )
+          })}
+        </AnimatePresence>
+      </div>
+
+      <MovieDetailSheet
+        movie={detailMovie}
+        onClose={() => setDetailMovie(null)}
+      />
+    </>
   )
 }

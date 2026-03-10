@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useMovieStore } from './store/useMovieStore'
+import { GENRE_LIST } from './api/kp'
 import CardStack from './components/CardStack'
 import ActionButtons from './components/ActionButtons'
 import LikedMovies from './components/LikedMovies'
 
 export default function App() {
-  const { genres, selectedGenreId, liked, loadGenres, loadMovies, setGenre } = useMovieStore()
+  const { selectedGenre, liked, loadMovies, setGenre } = useMovieStore()
   const [likedOpen, setLikedOpen] = useState(false)
 
   useEffect(() => {
-    loadGenres()
     loadMovies(true)
   }, [])
 
@@ -40,15 +40,15 @@ export default function App() {
         <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-none -mx-4 px-4">
           <GenreChip
             label="Все"
-            active={selectedGenreId === null}
+            active={selectedGenre === null}
             onClick={() => setGenre(null)}
           />
-          {genres.map((g) => (
+          {GENRE_LIST.map((g) => (
             <GenreChip
-              key={g.id}
-              label={g.name}
-              active={selectedGenreId === g.id}
-              onClick={() => setGenre(g.id)}
+              key={g}
+              label={g}
+              active={selectedGenre === g}
+              onClick={() => setGenre(g)}
             />
           ))}
         </div>
@@ -81,7 +81,7 @@ function GenreChip({
     <motion.button
       onClick={onClick}
       whileTap={{ scale: 0.95 }}
-      className={`shrink-0 px-3 py-1 rounded-full text-sm font-medium transition-colors ${
+      className={`shrink-0 px-3 py-1 rounded-full text-sm font-medium transition-colors capitalize ${
         active
           ? 'bg-white text-black'
           : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'
