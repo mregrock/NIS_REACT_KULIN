@@ -14,8 +14,13 @@ export function MovieList({ movies, toggleFavorite, viewMode }: Props) {
 
   return (
     <div className={`movie-list ${viewMode}`}>
-      {movies.map(movie => (
-        <MovieCard key={movie.id} movie={movie} toggleFavorite={toggleFavorite} viewMode={viewMode} />
+      {movies.map((movie) => (
+        <MovieCard
+          key={movie.id}
+          movie={movie}
+          toggleFavorite={toggleFavorite}
+          viewMode={viewMode}
+        />
       ))}
     </div>
   );
