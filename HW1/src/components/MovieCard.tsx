@@ -10,12 +10,16 @@ export function MovieCard({ movie, toggleFavorite, viewMode }: Props) {
   return (
     <div className="movie-card">
       {viewMode === 'grid' && (
-        <img src={movie.posterUrl} alt={movie.title} style={{ width: '100%' }} />
+        <img
+          src={movie.posterUrl}
+          alt={movie.title}
+          style={{ width: '100%' }}
+        />
       )}
       <div className="movie-card-info">
         <h2>{movie.title}</h2>
         <p>{movie.year}</p>
-        <button 
+        <button
           onClick={() => toggleFavorite(movie.id)}
           className={`favorite-btn ${movie.isFavorite ? 'favorited' : ''}`}
         >

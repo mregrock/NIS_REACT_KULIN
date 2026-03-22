@@ -7,12 +7,12 @@
   display: inline-block;
   vertical-align: top;
   transition: all 0.3s ease-in-out;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .movie-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .movie-list.grid {
@@ -57,7 +57,7 @@
 }
 
 .movie-list.list .movie-card img {
- display: none;
+  display: none;
 }
 
 .app-container {
